@@ -1,5 +1,6 @@
 import { getToken } from "next-auth/jwt";
 import { NextRequest, NextResponse } from "next/server";
+import { getServerEnv } from "@/lib/env";
 import { getTransactions } from "@/features/transactions/transactions-api";
 import {
   DEFAULT_TRANSACTION_FILTERS,
@@ -7,9 +8,10 @@ import {
 } from "@/features/transactions/types";
 
 export async function GET(request: NextRequest) {
+  const { NEXTAUTH_SECRET } = getServerEnv();
   const token = await getToken({
     req: request,
-    secret: process.env.NEXTAUTH_SECRET,
+    secret: NEXTAUTH_SECRET,
   });
 
   if (!token?.orgId) {

@@ -1,36 +1,87 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Payment Gateway Admin Dashboard
 
-## Getting Started
+Multi-tenant SaaS Payment Gateway Admin Dashboard (Next.js, TypeScript, Prisma, NextAuth).
 
-First, run the development server:
+## Stack
+
+- **Next.js** (App Router), **TypeScript**, **Tailwind CSS**
+- **Prisma** + **PostgreSQL**
+- **NextAuth** (JWT)
+- **React Query**, **Zustand**, **Framer Motion**, **Recharts**, **shadcn-style UI**
+
+## Getting started
+
+### 1. Environment variables
+
+Copy the example env and set required values:
+
+```bash
+cp env.example .env.local
+```
+
+Edit `.env.local`:
+
+- **DATABASE_URL** – PostgreSQL connection string (required)
+- **NEXTAUTH_SECRET** – Secret for JWT (e.g. `openssl rand -base64 32`)
+- **NEXTAUTH_URL** – App URL (default `http://localhost:3000`)
+
+### 2. Database
+
+```bash
+npm install
+npx prisma generate
+npx prisma migrate dev
+```
+
+### 3. Run
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Script        | Description                    |
+|---------------|--------------------------------|
+| `npm run dev` | Start dev server               |
+| `npm run build` | Production build             |
+| `npm run start` | Start production server      |
+| `npm run lint`  | Run ESLint                   |
+| `npm run db:generate` | Generate Prisma client |
+| `npm run db:push`     | Push schema (no migrations) |
+| `npm run db:migrate`  | Run migrations              |
+| `npm run db:studio`   | Open Prisma Studio          |
 
-## Learn More
+## Environment config
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Server-side code should use `getServerEnv()` from `@/lib/env` for required variables (validates at runtime). Client-safe values use `getPublicEnv()`.
 
 ## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. Push the repo to GitHub and import the project in [Vercel](https://vercel.com).
+2. Add **Environment Variables** in Project Settings:
+   - **DATABASE_URL** – e.g. Vercel Postgres or Neon
+   - **NEXTAUTH_SECRET** – generate with `openssl rand -base64 32`
+   - **NEXTAUTH_URL** – `https://your-project.vercel.app`
+3. Optional: **NEXT_PUBLIC_APP_URL** if different from NEXTAUTH_URL.
+4. Deploy. The build runs `prisma generate` via `postinstall`.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Vercel + PostgreSQL
+
+- Use [Vercel Postgres](https://vercel.com/storage/postgres) or [Neon](https://neon.tech) and set `DATABASE_URL` in Vercel.
+- Run migrations from your machine or a one-off script:  
+  `DATABASE_URL="your-production-url" npx prisma migrate deploy`
+
+## Project structure
+
+- **app/** – Next.js App Router (routes, layouts, loading, error boundaries)
+- **components/** – Shared UI and layout
+- **features/** – Feature modules (e.g. `transactions/`)
+- **lib/** – Utilities, Prisma client, auth, env, animations
+
+## Learn more
+
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Next.js Deployment](https://nextjs.org/docs/app/building-your-application/deploying)
