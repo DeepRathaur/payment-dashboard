@@ -1,6 +1,12 @@
 import { getToken } from "next-auth/jwt";
 import { NextRequest, NextResponse } from "next/server";
 import { getServerEnv } from "@/lib/env";
+import {
+  isDummyBackend,
+  mockLatency,
+  getMockTransactions,
+  DEFAULT_MOCK_ORG_ID,
+} from "@/lib/mock-data";
 import { getTransactions } from "@/features/transactions/transactions-api";
 import {
   DEFAULT_TRANSACTION_FILTERS,
@@ -8,13 +14,26 @@ import {
 } from "@/features/transactions/types";
 
 export async function GET(request: NextRequest) {
-  const { NEXTAUTH_SECRET } = getServerEnv();
-  const token = await getToken({
-    req: request,
-    secret: NEXTAUTH_SECRET,
-  });
+  const useDummy = isDummyBackend();
 
-  if (!token?.orgId) {
+  let orgId: string | null = null;
+  if (!useDummy) {
+    const { NEXTAUTH_SECRET } = getServerEnv();
+    const token = await getToken({
+      req: request,
+      secret: NEXTAUTH_SECRET,
+    });
+    orgId = token?.orgId as string | null ?? null;
+  } else {
+    const token = await getToken({
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET!,
+    });
+    orgId = (token?.orgId as string | null) ?? DEFAULT_MOCK_ORG_ID;
+    await mockLatency();
+  }
+
+  if (!orgId) {
     return NextResponse.json(
       { error: "Unauthorized or no organization" },
       { status: 401 }
@@ -38,9 +57,20 @@ export async function GET(request: NextRequest) {
   };
 
   try {
-    const { data, total } = await getTransactions(token.orgId as string, filters);
-    const totalPages = Math.ceil(total / filters.limit);
+    if (useDummy) {
+      const { data, total } = getMockTransactions(orgId, filters);
+      const totalPages = Math.ceil(total / filters.limit);
+      return NextResponse.json({
+        data,
+        total,
+        page: filters.page,
+        limit: filters.limit,
+        totalPages,
+      });
+    }
 
+    const { data, total } = await getTransactions(orgId, filters);
+    const totalPages = Math.ceil(total / filters.limit);
     return NextResponse.json({
       data,
       total,

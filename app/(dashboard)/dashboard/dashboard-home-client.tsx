@@ -1,9 +1,21 @@
 "use client";
 
-import { AnimatedPageWrapper, AnimatedPageSection, KpiCard } from "@/components/ui";
+import { AnimatedPageWrapper, AnimatedPageSection, KpiCard, SkeletonCard } from "@/components/ui";
 import { LazyRevenueChart } from "@/components/charts";
+import { useAnalyticsQuery } from "@/hooks";
+
+function formatCurrency(cents: number): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(cents / 100);
+}
 
 export function DashboardHomeClient() {
+  const { data: analytics, isLoading } = useAnalyticsQuery();
+
   return (
     <AnimatedPageWrapper>
       <AnimatedPageSection>
@@ -19,15 +31,40 @@ export function DashboardHomeClient() {
 
       <AnimatedPageSection>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <KpiCard
-            title="Total volume"
-            value="$0"
-            subtitle="This month"
-            gradient
-          />
-          <KpiCard title="Transactions" value="0" subtitle="Last 30 days" />
-          <KpiCard title="Success rate" value="—" />
-          <KpiCard title="Disputes" value="0" subtitle="Open" />
+          {isLoading ? (
+            [1, 2, 3, 4].map((i) => <SkeletonCard key={i} />)
+          ) : analytics ? (
+            <>
+              <KpiCard
+                title="Total volume"
+                value={formatCurrency(analytics.totalVolume)}
+                subtitle="All time (mock)"
+                gradient
+              />
+              <KpiCard
+                title="Transactions"
+                value={analytics.transactionCount.toLocaleString()}
+                subtitle="Total count"
+              />
+              <KpiCard
+                title="Success rate"
+                value={`${analytics.successRate}%`}
+                subtitle="Succeeded"
+              />
+              <KpiCard
+                title="Disputes"
+                value={(analytics.countByStatus["REFUNDED"] ?? 0) + (analytics.countByStatus["FAILED"] ?? 0)}
+                subtitle="Refunded + Failed"
+              />
+            </>
+          ) : (
+            <>
+              <KpiCard title="Total volume" value="$0" subtitle="This month" gradient />
+              <KpiCard title="Transactions" value="0" subtitle="Last 30 days" />
+              <KpiCard title="Success rate" value="—" />
+              <KpiCard title="Disputes" value="0" subtitle="Open" />
+            </>
+          )}
         </div>
       </AnimatedPageSection>
 

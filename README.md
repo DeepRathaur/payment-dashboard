@@ -25,13 +25,21 @@ Edit `.env.local`:
 - **NEXTAUTH_SECRET** – Secret for JWT (e.g. `openssl rand -base64 32`)
 - **NEXTAUTH_URL** – App URL (default `http://localhost:3000`)
 
-### 2. Database
+### 2. Database (or use dummy backend)
 
+**Option A – With database (Phase 4)**  
 ```bash
 npm install
 npx prisma generate
 npx prisma migrate dev
 ```
+
+**Option B – Dummy backend (Phase 2, no DB)**  
+Add to `.env.local`:
+```bash
+USE_DUMMY_BACKEND=true
+```
+Then run `npm run dev`. `/api/transactions`, `/api/analytics`, and `/api/settlements` will use mock data (multi-tenant orgId, 300–700ms artificial latency). No `DATABASE_URL` required for these APIs.
 
 ### 3. Run
 

@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { ChartWrapper } from "@/components/ui";
 import { SkeletonChart } from "@/components/ui";
+import { useAnalyticsQuery } from "@/hooks";
 
 const RevenueChart = dynamic(
   () =>
@@ -14,12 +15,10 @@ const RevenueChart = dynamic(
 );
 
 export function LazyRevenueChart() {
+  const { data: analytics } = useAnalyticsQuery();
   return (
-    <ChartWrapper
-      title="Revenue"
-      subtitle="Last 7 days"
-    >
-      <RevenueChart />
+    <ChartWrapper title="Revenue" subtitle="Last 14 days (from API when dummy backend on)">
+      <RevenueChart volumeByDay={analytics?.volumeByDay} />
     </ChartWrapper>
   );
 }

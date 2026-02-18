@@ -10,7 +10,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const MOCK_DATA = [
+const FALLBACK_DATA = [
   { name: "Mon", value: 4200 },
   { name: "Tue", value: 3800 },
   { name: "Wed", value: 5100 },
@@ -20,10 +20,25 @@ const MOCK_DATA = [
   { name: "Sun", value: 4800 },
 ];
 
-export function RevenueChart() {
+const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+type RevenueChartProps = {
+  /** From /api/analytics volumeByDay (date, value in cents) */
+  volumeByDay?: { date: string; value: number }[];
+};
+
+export function RevenueChart({ volumeByDay }: RevenueChartProps) {
+  const chartData =
+    volumeByDay?.length ?
+      volumeByDay.map((d) => ({
+        name: DAY_NAMES[new Date(d.date).getDay()] ?? d.date.slice(5),
+        value: d.value,
+      }))
+    : FALLBACK_DATA;
+
   return (
     <ResponsiveContainer width="100%" height={260}>
-      <AreaChart data={MOCK_DATA} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+      <AreaChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
         <defs>
           <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="#6366f1" stopOpacity={0.3} />
@@ -50,7 +65,10 @@ export function RevenueChart() {
             borderRadius: "12px",
             border: "1px solid var(--tw-border-color)",
           }}
-          formatter={(value: number) => [`$${value.toLocaleString()}`, "Revenue"]}
+          formatter={(value: number) => [
+            `$${(Number(value) / 100).toLocaleString()}`,
+            "Revenue",
+          ]}
         />
         <Area
           type="monotone"
