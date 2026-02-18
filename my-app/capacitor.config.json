@@ -1,0 +1,10 @@
+{
+  "appId": "com.example.lite",
+  "appName": "lite",
+  "webDir": "dist",
+  "plugins": {
+    "SplashScreen": {
+      "launchAutoHide": false
+    }
+  }
+}
